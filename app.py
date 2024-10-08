@@ -28,8 +28,8 @@ def buscar_usuarios():
     cursor = con.cursor(dictionary=True)
     cursor.execute("SELECT Id_Usuario, Nombre_Usuario, Contrasena FROM usuarios ORDER BY Id_Usuario DESC")
     registros = cursor.fetchall()
-
     con.close()
+    
     return make_response(jsonify(registros))
 
 @app.route("/usuarios/guardar", methods=["POST"])
@@ -37,9 +37,11 @@ def guardar_usuario():
     if not con.is_connected():
         con.reconnect()
 
-    id_usuario = request.form["id_usuario"]
-    nombre_usuario = request.form["nombre_usuario"]
-    contrasena = request.form["contrasena"]
+    id_usuario = request.form.get("id_usuario")
+    nombre_usuario = request.form.get("nombre_usuario")
+    contrasena = request.form.get("contrasena")
+
+    print(f"ID Usuario: {id_usuario}, Nombre: {nombre_usuario}, Contraseña: {contrasena}")  # Depuración
 
     cursor = con.cursor()
 
@@ -58,10 +60,15 @@ def guardar_usuario():
         """
         val = (nombre_usuario, contrasena)
 
-    cursor.execute(sql, val)
-    con.commit()
-    con.close()
+    try:
+        cursor.execute(sql, val)
+        con.commit()
+        print("Inserción/Actualización exitosa")  # Depuración
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")  # Manejo de errores
+        con.rollback()
 
+    con.close()
     notificar_actualizacion_usuarios()
 
     return make_response(jsonify({}))
