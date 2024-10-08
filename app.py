@@ -1,10 +1,14 @@
-from flask import Flask, render_template, request, jsonify, make_response
-import mysql.connector
-import datetime
-import pytz
-import pusher
+# python.exe -m venv .venv
+# cd .venv/Scripts
+# activate.bat
+# py -m ensurepip --upgrade
 
-# Conexión a la base de datos
+from flask import Flask
+from flask import render_template
+from flask import request
+from flask import jsonify, make_response
+import mysql.connector
+
 con = mysql.connector.connect(
     host="185.232.14.52",
     database="u760464709_tst_sep",
@@ -14,101 +18,110 @@ con = mysql.connector.connect(
 
 app = Flask(__name__)
 
-# Página de inicio
+# Ruta principal
 @app.route("/")
 def index():
-    con.close()
     return render_template("app.html")
 
-# Página para gestionar alumnos
+# Ruta para mostrar formulario de alumnos
 @app.route("/alumnos")
 def alumnos():
-    con.close()
     return render_template("alumnos.html")
 
-# Ruta para guardar los datos del alumno
-@app.route("/alumnos/guardar", methods=["POST"])
-def alumnosGuardar():
+# Guardar un nuevo usuario o actualizar un usuario existente
+@app.route("/usuarios/guardar", methods=["POST"])
+def usuarios_guardar():
     if not con.is_connected():
         con.reconnect()
-    
-    matricula = request.form["txtMatriculaFA"]
-    nombreapellido = request.form["txtNombreApellidoFA"]
+
+    id_usuario = request.form.get("id_usuario")
+    nombre_usuario = request.form["nombre_usuario"]
+    contrasena = request.form["contrasena"]
 
     cursor = con.cursor()
 
-    sql = """
-    INSERT INTO alumnos (Matricula, NombreApellido)
-    VALUES (%s, %s)
-    """
-    val = (matricula, nombreapellido)
-    
+    # Si existe un id_usuario, actualizamos el registro
+    if id_usuario:
+        sql = """
+        UPDATE usuarios SET
+        Nombre_Usuario = %s,
+        Contrasena = %s
+        WHERE Id_Usuario = %s
+        """
+        val = (nombre_usuario, contrasena, id_usuario)
+    else:
+        # Si no hay id_usuario, es un nuevo registro
+        sql = """
+        INSERT INTO usuarios (Nombre_Usuario, Contrasena)
+        VALUES (%s, %s)
+        """
+        val = (nombre_usuario, contrasena)
+
     cursor.execute(sql, val)
     con.commit()
     con.close()
 
-    return f"Matrícula {matricula} Nombre y Apellido {nombreapellido}"
+    return f"Usuario {nombre_usuario} guardado exitosamente."
 
-# Ruta para buscar los registros de alumnos
-@app.route("/alumnos/buscar", methods=["GET"])
-def buscarAlumnos():
+# Buscar usuarios
+@app.route("/usuarios/buscar")
+def usuarios_buscar():
     if not con.is_connected():
         con.reconnect()
 
     cursor = con.cursor(dictionary=True)
     cursor.execute("""
-    SELECT id, Matricula, NombreApellido, DATE_FORMAT(FechaRegistro, '%%d/%%m/%%Y') AS FechaRegistro
-    FROM alumnos
-    ORDER BY id DESC
+    SELECT Id_Usuario, Nombre_Usuario, Contrasena FROM usuarios
+    ORDER BY Id_Usuario DESC
     LIMIT 10 OFFSET 0
     """)
     registros = cursor.fetchall()
-    
+
     con.close()
+
     return make_response(jsonify(registros))
 
-# Ruta para editar los datos de un alumno
-@app.route("/alumnos/editar", methods=["GET"])
-def editarAlumno():
+# Editar usuario
+@app.route("/usuarios/editar", methods=["GET"])
+def usuarios_editar():
     if not con.is_connected():
         con.reconnect()
 
-    id = request.args["id"]
+    id_usuario = request.args.get("id_usuario")
 
     cursor = con.cursor(dictionary=True)
     sql = """
-    SELECT id, Matricula, NombreApellido
-    FROM alumnos
-    WHERE id = %s
+    SELECT Id_Usuario, Nombre_Usuario, Contrasena FROM usuarios
+    WHERE Id_Usuario = %s
     """
-    val = (id,)
-    
-    cursor.execute(sql, val)
-    registros = cursor.fetchall()
-    
-    con.close()
-    return make_response(jsonify(registros))
+    val = (id_usuario,)
 
-# Ruta para eliminar un registro de alumno
-@app.route("/alumnos/eliminar", methods=["POST"])
-def eliminarAlumno():
+    cursor.execute(sql, val)
+    registro = cursor.fetchone()
+    con.close()
+
+    return make_response(jsonify(registro))
+
+# Eliminar usuario
+@app.route("/usuarios/eliminar", methods=["POST"])
+def usuarios_eliminar():
     if not con.is_connected():
         con.reconnect()
 
-    id = request.form["id"]
+    id_usuario = request.form["id_usuario"]
 
     cursor = con.cursor()
     sql = """
-    DELETE FROM alumnos
-    WHERE id = %s
+    DELETE FROM usuarios
+    WHERE Id_Usuario = %s
     """
-    val = (id,)
-    
+    val = (id_usuario,)
+
     cursor.execute(sql, val)
     con.commit()
     con.close()
 
-    return make_response(jsonify({}))
+    return f"Usuario con ID {id_usuario} eliminado."
 
 if __name__ == "__main__":
     app.run(debug=True)
