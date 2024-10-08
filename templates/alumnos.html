@@ -10,80 +10,81 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
 
-    <title>Alumnos</title>
+    <title>Usuarios</title>
 </head>
 <body>
-    <!-- Nombre de la etiqueta Ejemplo: INPUT -->
-    <!-- # para ID -->
-    <!-- . para CLASS -->
-
-    <!-- form index 0 -->
-    <!-- #frmAlumnos -->
-    <!-- .formulario index 0 -->
     <div class="container">
-        <form method="post" id="frmAlumnos" class="formulario">
+        <form method="post" id="frmUsuarios" class="formulario">
             <div class="mb-1">
-                <label id="lblMatriculaFA" for="txtMatriculaFA">Matrícula:</label>
-                <input type="number" name="txtMatriculaFA" id="txtMatriculaFA" class="form-control" required="true" minlength="8" maxlength="8" data-rule-digits="true">
+                <label id="lblNombreUsuario" for="txtNombreUsuario">Nombre de Usuario:</label>
+                <input type="text" name="txtNombreUsuario" id="txtNombreUsuario" class="form-control" required minlength="5" maxlength="20">
             </div>
             <div class="mb-1">
-                <label id="lblNombreApellidoFA" for="txtNombreApellidoFA">Nombre y Apellido:</label>
-                <input type="text" name="txtNombreApellidoFA" id="txtNombreApellidoFA" class="form-control" required="true" minlength="10" maxlength="25">
+                <label id="lblContrasena" for="txtContrasena">Contraseña:</label>
+                <input type="password" name="txtContrasena" id="txtContrasena" class="form-control" required minlength="8" maxlength="20">
             </div>
             <div class="text-end">
-                <button id="btnGuardarFA" name="btnGuardarFA" class="btn btn-dark">Guardar</button>
+                <button id="btnGuardarUsuario" name="btnGuardarUsuario" class="btn btn-dark" type="submit">Guardar</button>
             </div>
         </form>
-        <div id="divAlumnos"></div>
+        <div id="divUsuarios"></div>
     
-        <!-- table index 0 -->
         <table class="table table-sm">
             <thead>
                 <tr>
-                    <th>Matrícula</th>
-                    <th>Nombre y Apellido</th>
+                    <th>Id Usuario</th>
+                    <th>Nombre de Usuario</th>
                 </tr>
             </thead>
-            <tbody id="tbodyAlumnos"></tbody>
+            <tbody id="tbodyUsuarios"></tbody>
         </table>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 
     <script>
-        window.addEventListener("load", function (event) {
-            $("#frmAlumnos").validate({
-                messages: {
-                    txtMatriculaFA: {
-                        required: "Ingresa la matrícula",
-                        minlength: "La matrícula es de 8 digitos",
-                        maxlength: "La matrícula es de 8 digitos",
-                        digits: "La matrícula es de solo números"
+        $(document).ready(function() {
+            // Validación de formulario con jQuery Validate
+            $("#frmUsuarios").validate({
+                rules: {
+                    txtNombreUsuario: {
+                        required: true,
+                        minlength: 5,
+                        maxlength: 20
                     },
-                    txtNombreApellidoFA: {
-                        required: "Ingresa tu nombre y apellido",
-                        minlength: "Ingresa más o 10 caracteres",
-                        maxlength: "Ingresa menos o 25 caracteres"
+                    txtContrasena: {
+                        required: true,
+                        minlength: 8,
+                        maxlength: 20
                     }
                 },
-                rules: {
-                    txtMatriculaFA: {
-                        // required: true,
-                        // minlength: 8,
-                        // maxlength: 8
-                        // digits: true
+                messages: {
+                    txtNombreUsuario: {
+                        required: "Ingresa el nombre de usuario",
+                        minlength: "El nombre de usuario debe tener al menos 5 caracteres",
+                        maxlength: "El nombre de usuario no debe exceder los 20 caracteres"
+                    },
+                    txtContrasena: {
+                        required: "Ingresa la contraseña",
+                        minlength: "La contraseña debe tener al menos 8 caracteres",
+                        maxlength: "La contraseña no debe exceder los 20 caracteres"
                     }
+                },
+                submitHandler: function(form) {
+                    // Envío del formulario con Ajax
+                    $.post("/usuarios/guardar", $(form).serialize(), function(respuesta) {
+                        console.log(respuesta);
+
+                        // Asumiendo que el servidor devuelve el usuario guardado en 'respuesta'
+                        let usuario = respuesta.usuario; // Asegúrate de que el servidor envíe correctamente estos datos
+
+                        // Agregar nueva fila a la tabla
+                        let newRow = `<tr><td>${usuario.Id_Usuario}</td><td>${usuario.Nombre_Usuario}</td></tr>`;
+                        $("#tbodyUsuarios").append(newRow);
+                    });
                 }
-            })
-
-            $("#frmAlumnos").submit(function (event) {
-                event.preventDefault()
-
-                $.post("/alumnos/guardar", $(this).serialize(), function (respuesta) {
-                    console.log(respuesta)
-                })
-            })
-        })
-    </script>    
+            });
+        });
+    </script>
 </body>
 </html>
