@@ -10,39 +10,40 @@
 </head>
 <body>
     <div class="container">
-      <form id="frmUsuarios" method="post">
-          <input type="hidden" id="id_usuario" name="id_usuario"> <!-- Para editar -->
+        <form id="frmUsuarios" method="post">
+            <input type="hidden" id="id_usuario" name="id_usuario"> <!-- Para editar -->
 
-          <div class="mb-1">
-              <label for="nombre_usuario">Nombre de Usuario</label>
-              <input type="text" id="nombre_usuario" name="nombre_usuario" class="form-control">
-          </div>
-          <div class="mb-1">
-              <label for="contrasena">Contraseña</label>
-              <input type="password" id="contrasena" name="contrasena" class="form-control">
-          </div>
-          <div class="mb-1">
-              <button id="guardar" name="guardar" class="btn btn-dark">Guardar</button>
-              <button type="reset" id="cancelar" name="cancelar" class="btn btn-link">Cancelar</button>
-          </div>
-      </form>
-      <table class="table table-sm">
-        <thead>
-          <tr>
-            <th>Nombre de Usuario</th>
-            <th>Contraseña</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody id="tbodyUsuarios"></tbody>
-      </table>
+            <div class="mb-1">
+                <label for="nombre_usuario">Nombre de Usuario</label>
+                <input type="text" id="nombre_usuario" name="nombre_usuario" class="form-control" required minlength="5" maxlength="15">
+            </div>
+            <div class="mb-1">
+                <label for="contrasena">Contraseña</label>
+                <input type="password" id="contrasena" name="contrasena" class="form-control" required minlength="6" maxlength="15">
+            </div>
+            <div class="mb-1">
+                <button id="guardar" name="guardar" class="btn btn-dark">Guardar</button>
+                <button type="reset" id="cancelar" name="cancelar" class="btn btn-link">Cancelar</button>
+            </div>
+        </form>
+
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Nombre de Usuario</th>
+                    <th>Contraseña</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tbodyUsuarios"></tbody>
+        </table>
     </div>
 
     <script>
         window.addEventListener("load", function () {
             function buscar() {
                 $.get("/usuarios/buscar", function (respuesta) {
-                    $("#tbodyUsuarios").html("")
+                    $("#tbodyUsuarios").html("");
 
                     respuesta.forEach(usuario => {
                         $("#tbodyUsuarios").append(`
@@ -53,7 +54,7 @@
                                     <button class="btn btn-primary btn-editar" data-id="${usuario.Id_Usuario}">Editar</button>
                                     <button class="btn btn-danger btn-eliminar" data-id="${usuario.Id_Usuario}">Eliminar</button>
                                 </td>
-                            </tr>`)
+                            </tr>`);
                     });
                 });
             }
@@ -95,6 +96,7 @@
                 $("#id_usuario").val("");
             });
 
+            // Pusher para recibir actualizaciones
             Pusher.logToConsole = true;
             var pusher = new Pusher("2df86616075904231311", { cluster: "us2" });
             var channel = pusher.subscribe("canalUsuarios");
@@ -103,6 +105,6 @@
                 buscar(); // Refresca la lista cuando hay un nuevo registro
             });
         });
-    </script>    
+    </script>
 </body>
 </html>
