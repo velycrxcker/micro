@@ -1,8 +1,8 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///usuarios.db'  # Cambia esto a tu base de datos
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///usuarios.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -17,28 +17,31 @@ def create_tables():
 
 @app.route('/')
 def index():
-    usuarios = Usuario.query.all()
-    return render_template('registro.html', usuarios=usuarios)
+    return render_template('app.html')
 
-@app.route('/alumnos/guardar', methods=['POST'])
+@app.route('/usuarios/buscar', methods=['GET'])
+def buscar_usuarios():
+    usuarios = Usuario.query.all()
+    return jsonify([{ "Id_Usuario": u.id_usuario, "Nombre_Usuario": u.nombre_usuario, "Contrasena": u.contrasena } for u in usuarios])
+
+@app.route('/usuarios/guardar', methods=['POST'])
 def guardar_usuario():
-    nombre_usuario = request.form['txtNombreUsuario']
-    contrasena = request.form['txtContrasena']
+    nombre_usuario = request.form['nombre_usuario']
+    contrasena = request.form['contrasena']
     nuevo_usuario = Usuario(nombre_usuario=nombre_usuario, contrasena=contrasena)
     db.session.add(nuevo_usuario)
     db.session.commit()
     return redirect(url_for('index'))
 
-@app.route('/alumnos/editar/<int:id_usuario>', methods=['POST'])
-def editar_usuario(id_usuario):
-    usuario = Usuario.query.get_or_404(id_usuario)
-    usuario.nombre_usuario = request.form['txtNombreUsuario']
-    usuario.contrasena = request.form['txtContrasena']
-    db.session.commit()
-    return redirect(url_for('index'))
+@app.route('/usuarios/editar', methods=['GET'])
+def editar_usuario():
+    id_usuario = request.args.get('id_usuario')
+    usuario = Usuario.query.get(id_usuario)
+    return jsonify([{ "Id_Usuario": usuario.id_usuario, "Nombre_Usuario": usuario.nombre_usuario, "Contrasena": usuario.contrasena }])
 
-@app.route('/alumnos/eliminar/<int:id_usuario>', methods=['POST'])
-def eliminar_usuario(id_usuario):
+@app.route('/usuarios/eliminar', methods=['POST'])
+def eliminar_usuario():
+    id_usuario = request.form['id_usuario']
     usuario = Usuario.query.get_or_404(id_usuario)
     db.session.delete(usuario)
     db.session.commit()
