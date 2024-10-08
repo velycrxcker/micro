@@ -1,8 +1,3 @@
-# python.exe -m venv .venv
-# cd .venv/Scripts
-# activate.bat
-# py -m ensurepip --upgrade
-
 from flask import Flask
 from flask import render_template
 from flask import request
@@ -34,32 +29,34 @@ def usuarios_guardar():
     if not con.is_connected():
         con.reconnect()
 
-    id_usuario = request.form.get("id_usuario")
+    id_usuario = request.form.get("id_usuario")  # Cambiado a id_usuario
     nombre_usuario = request.form["nombre_usuario"]
     contrasena = request.form["contrasena"]
 
     cursor = con.cursor()
 
-    # Si existe un id_usuario, actualizamos el registro
-    if id_usuario:
-        sql = """
-        UPDATE usuarios SET
-        Nombre_Usuario = %s,
-        Contrasena = %s
-        WHERE Id_Usuario = %s
-        """
-        val = (nombre_usuario, contrasena, id_usuario)
-    else:
-        # Si no hay id_usuario, es un nuevo registro
-        sql = """
-        INSERT INTO usuarios (Nombre_Usuario, Contrasena)
-        VALUES (%s, %s)
-        """
-        val = (nombre_usuario, contrasena)
+    try:
+        if id_usuario:
+            sql = """
+            UPDATE usuarios SET
+            Nombre_Usuario = %s,
+            Contrasena = %s
+            WHERE Id_Usuario = %s
+            """
+            val = (nombre_usuario, contrasena, id_usuario)
+        else:
+            sql = """
+            INSERT INTO usuarios (Nombre_Usuario, Contrasena)
+            VALUES (%s, %s)
+            """
+            val = (nombre_usuario, contrasena)
 
-    cursor.execute(sql, val)
-    con.commit()
-    con.close()
+        cursor.execute(sql, val)
+        con.commit()
+    except Exception as e:
+        print(f"Ocurrió un error: {e}")
+    finally:
+        con.close()
 
     return f"Usuario {nombre_usuario} guardado exitosamente."
 
@@ -87,7 +84,7 @@ def usuarios_editar():
     if not con.is_connected():
         con.reconnect()
 
-    id_usuario = request.args.get("id_usuario")
+    id_usuario = request.args.get("id_usuario")  # Cambiado a id_usuario
 
     cursor = con.cursor(dictionary=True)
     sql = """
@@ -108,7 +105,7 @@ def usuarios_eliminar():
     if not con.is_connected():
         con.reconnect()
 
-    id_usuario = request.form["id_usuario"]
+    id_usuario = request.form["id_usuario"]  # Cambiado a id_usuario
 
     cursor = con.cursor()
     sql = """
