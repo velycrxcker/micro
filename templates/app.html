@@ -11,7 +11,7 @@
 <body>
     <div class="container">
       <form id="frmUsuarios" method="post">
-          <input type="hidden" id="id" name="id">
+          <input type="hidden" id="id_usuario" name="id_usuario"> <!-- Cambiado aquí -->
 
           <div class="mb-1">
               <label for="nombre_usuario">Nombre de Usuario</label>
@@ -43,7 +43,7 @@
     <script>
         window.addEventListener("load", function (event) {
             function buscar() {
-                $.get("/buscar", function (respuesta) {
+                $.get("/usuarios/buscar", function (respuesta) {
                     $("#tbodyUsuarios").html("")
 
                     for (var x in respuesta) {
@@ -66,10 +66,10 @@
             $(document).on("click", ".btn-editar", function (event) {
                 var id = $(this).attr("data-id")
 
-                $.get("/editar", {id: id}, function (respuesta) {
+                $.get("/usuarios/editar", {id_usuario: id}, function (respuesta) { // Cambiado aquí
                     var usuario = respuesta[0]
 
-                    $("#id")
+                    $("#id_usuario") // Cambiado aquí
                     .val(usuario["Id_Usuario"])
                     .trigger("focus")
 
@@ -85,19 +85,20 @@
 
                 var id = $(this).attr("data-id")
 
-                $.post("/eliminar", {id: id})
+                $.post("/usuarios/eliminar", {id_usuario: id}) // Cambiado aquí
             })
 
             $("#frmUsuarios")
             .submit(function (event)  {
                 event.preventDefault()
 
-                $.post("/guardar", $(this).serialize(), function (respuesta) {
+                $.post("/usuarios/guardar", $(this).serialize(), function (respuesta) {
                     $("#frmUsuarios").get(0).reset()
+                    buscar(); // Añadir para refrescar la lista después de guardar
                 })
             })
             .on("reset", function (event) {
-                $("#id").val("")
+                $("#id_usuario").val("") // Cambiado aquí
             })
 
             Pusher.logToConsole = true
