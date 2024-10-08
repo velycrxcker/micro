@@ -3,38 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Alumnos</title>
-
-    <!-- Agregar librerías JQuery, JQuery Validation y Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <title>Alumnos</title>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2>Registro de Alumnos</h2>
-        <form id="frmAlumnos">
-            <input type="hidden" id="id_alumno" name="id_alumno"> <!-- Campo oculto para ID de alumno -->
-
-            <div class="mb-3">
-                <label for="txtMatriculaFA" class="form-label">Matrícula:</label>
-                <input type="number" class="form-control" id="txtMatriculaFA" name="txtMatriculaFA" required minlength="8" maxlength="8" data-rule-digits="true">
-            </div>
-
-            <div class="mb-3">
-                <label for="txtNombreApellidoFA" class="form-label">Nombre y Apellido:</label>
-                <input type="text" class="form-control" id="txtNombreApellidoFA" name="txtNombreApellidoFA" required minlength="10" maxlength="25">
-            </div>
-
-            <button type="submit" class="btn btn-primary">Guardar</button>
-            <button type="reset" class="btn btn-link">Cancelar</button>
-        </form>
-
-        <table class="table table-sm mt-3">
+    <div class="container">
+        <h1 class="mt-5">Alumnos</h1>
+        <table class="table table-sm">
             <thead>
                 <tr>
-                    <th>Matrícula</th>
-                    <th>Nombre y Apellido</th>
+                    <th>Nombre</th>
+                    <th>Edad</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -43,77 +22,5 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-    
-    <script>
-        $(document).ready(function() {
-            // Configurar validación
-            $("#frmAlumnos").validate({
-                messages: {
-                    txtMatriculaFA: {
-                        required: "Ingresa la matrícula",
-                        minlength: "La matrícula debe tener 8 dígitos",
-                        maxlength: "La matrícula debe tener 8 dígitos",
-                        digits: "La matrícula solo debe contener números"
-                    },
-                    txtNombreApellidoFA: {
-                        required: "Ingresa tu nombre y apellido",
-                        minlength: "Ingresa al menos 10 caracteres",
-                        maxlength: "Ingresa menos de 25 caracteres"
-                    }
-                }
-            });
-
-            // Función para cargar los alumnos
-            function cargarAlumnos() {
-                $.get("/alumnos/buscar", function(respuesta) {
-                    $("#tbodyAlumnos").empty();
-                    respuesta.forEach(function(alumno) {
-                        $("#tbodyAlumnos").append(`
-                            <tr>
-                                <td>${alumno.matricula}</td>
-                                <td>${alumno.nombre_apellido}</td>
-                                <td>
-                                    <button class="btn btn-primary btn-editar" data-id="${alumno.id_alumno}">Editar</button>
-                                    <button class="btn btn-danger btn-eliminar" data-id="${alumno.id_alumno}">Eliminar</button>
-                                </td>
-                            </tr>
-                        `);
-                    });
-                });
-            }
-
-            // Cargar alumnos al inicio
-            cargarAlumnos();
-
-            // Manejar el evento de submit del formulario
-            $("#frmAlumnos").submit(function(event) {
-                event.preventDefault();
-                $.post("/alumnos/guardar", $(this).serialize(), function(respuesta) {
-                    $("#frmAlumnos").get(0).reset(); // Reiniciar el formulario
-                    cargarAlumnos(); // Volver a cargar la lista de alumnos
-                });
-            });
-
-            // Manejar el clic en el botón de editar
-            $(document).on("click", ".btn-editar", function() {
-                const id = $(this).data("id");
-                $.get(`/alumnos/editar/${id}`, function(alumno) {
-                    $("#id_alumno").val(alumno.id_alumno);
-                    $("#txtMatriculaFA").val(alumno.matricula);
-                    $("#txtNombreApellidoFA").val(alumno.nombre_apellido);
-                });
-            });
-
-            // Manejar el clic en el botón de eliminar
-            $(document).on("click", ".btn-eliminar", function() {
-                if (confirm("¿Quieres eliminar este registro?")) {
-                    const id = $(this).data("id");
-                    $.post(`/alumnos/eliminar/${id}`, function(respuesta) {
-                        cargarAlumnos(); // Volver a cargar la lista de alumnos
-                    });
-                }
-            });
-        });
-    </script>
 </body>
 </html>
